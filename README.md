@@ -1,4 +1,6 @@
 # Callable
+This tiny library is header-only and template-only, therefore it **cannot** be pre-compiled into a static/shared library.
+
 Any object, pointer or member function `x` that can be called like a function with `operator()` can be represented by a `callable`.
 Things that are callable comapatible:
  - function pointers: addresses of free functions or static member functions
@@ -17,7 +19,7 @@ and for any targets that need to use the library, do:
 target_link_libraries(my_target callable)
 ```
 
-### Manual
+### Not using CMake? No problem.
 here are ways you can do it without cmake:
 1. add **include/** directory to your build config for targets that need to use this library
 2. just copy the headers and stick 'em where you need 'em.
