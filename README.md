@@ -77,6 +77,8 @@ op1 = { stats, &statistic::accumulate }; // :)
 // of course you can do it all in one line
 callable op2{ statistic{}, &statistic::average };
 ```
+
+**Check out the unit tests to see all the different ways to use a `callable`**
 ## Stack allocated
 All `callable`s store their instances on the stack, and allow you to specify a fixed size as the second template argument. However, you can provide a **raw pointer** or a `shared_ptr` instead, to avoid copying or moving objects.
 
