@@ -64,14 +64,12 @@ main()
   functor j_init;
   a = { &j_init };
 
-  // shared_ptr is a safer way to avoid copies and moves
-  a = { std::make_shared<functor>() };
-
-  // initialize with a raw pointer to avoid copies and moves
   object l_init;
   a = { &l_init, &object::method };
 
   // shared_ptr is a safer way to avoid copies and moves
+  a = { std::make_shared<functor>() };
+  
   a = { std::make_shared<object>(), &object::method };
 
   return 0;

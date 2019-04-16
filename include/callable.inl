@@ -100,6 +100,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object, MemPtrT member)
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object.*(object->m_member))(arguments...);
   };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+  };
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
@@ -125,6 +131,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object)
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object.*(object->m_member))(arguments...);
   };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+  };
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
@@ -146,6 +158,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object, MemPtrT member)
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object->*(object->m_member))(arguments...);
   };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+  };
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
@@ -159,8 +177,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object)
   using concrete_type =
     member_function_raw_pointer<ClassT, call_operator_ptr_t, ReturnT, ArgTs...>;
   static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-  ::new (access())
-    concrete_type(object, &class_type::operator());
+  ::new (access()) concrete_type(object, &class_type::operator());
   m_deleter = [](auto base) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -170,6 +187,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object)
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object->*(object->m_member))(arguments...);
+  };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
   };
 }
 
@@ -194,6 +217,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object.get()->*(object->m_member))(arguments...);
   };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+  };
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
@@ -209,8 +238,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
                                                       ReturnT,
                                                       ArgTs...>;
   static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-  ::new (access())
-    concrete_type(object, &ClassT::operator());
+  ::new (access()) concrete_type(object, &ClassT::operator());
   m_deleter = [](auto base) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -220,6 +248,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object.get()->*(object->m_member))(arguments...);
+  };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
   };
 }
 
@@ -243,6 +277,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object.get()->*(object->m_member))(arguments...);
+  };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
   };
 }
 
@@ -270,6 +310,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object.get()->*(object->m_member))(arguments...);
   };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+  };
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
@@ -285,6 +331,12 @@ callable<ReturnT(ArgTs...), Capacity>::callable(function_type* function_pointer)
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (*object->m_function_ptr)(arguments...);
   };
+  m_copier = [](auto& base, const auto& other_base) {
+    ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+  };
+  m_mover = [](auto& base, auto&& other_base) {
+    ::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+  };
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
@@ -298,7 +350,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(const this_type& other)
   destroy();
   if (other.m_empty) {
   } else {
-    m_storage = other.m_storage;
+    (*other.m_copier)(*access(), *other.access());
     m_deleter = other.m_deleter;
     m_caller = other.m_caller;
     m_empty = false;
@@ -311,7 +363,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(this_type&& other) noexcept
   destroy();
   if (other.m_empty) {
   } else {
-    m_storage = ::std::move(other.m_storage);
+    (*other.m_mover)(*access(), ::std::move(*other.access()));
     m_deleter = other.m_deleter;
     m_caller = other.m_caller;
     m_empty = false;
@@ -327,7 +379,7 @@ callable<ReturnT(ArgTs...), Capacity>::operator=(const this_type& rhs)
   if (rhs.m_empty) {
     return *this;
   } else {
-    m_storage = rhs.m_storage;
+    (*rhs.m_copier)(*access(), *rhs.access());
     m_deleter = rhs.m_deleter;
     m_caller = rhs.m_caller;
     m_empty = false;
@@ -343,7 +395,7 @@ callable<ReturnT(ArgTs...), Capacity>::operator=(this_type&& rhs) noexcept
   if (rhs.m_empty) {
     return *this;
   } else {
-    m_storage = ::std::move(rhs.m_storage);
+    (*rhs.m_mover)(*access(), ::std::move(*rhs.access()));
     m_deleter = rhs.m_deleter;
     m_caller = rhs.m_caller;
     m_empty = false;

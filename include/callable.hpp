@@ -44,6 +44,12 @@ struct callable_base
   using caller_function_pointer =
     ReturnT (*)(const callable_base<ReturnT, ArgTs...>*,
                 in_place_forward_t<ArgTs>...);
+  using copier_function_pointer =
+    void (*)(callable_base<ReturnT, ArgTs...>&,
+             const callable_base<ReturnT, ArgTs...>&);
+  using mover_function_pointer =
+    void (*)(callable_base<ReturnT, ArgTs...>&,
+             callable_base<ReturnT, ArgTs...>&&);
 };
 
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
@@ -106,7 +112,7 @@ struct free_function : callable_base<ReturnT, ArgTs...>
 
 } // namespace detail
 
-constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 3;
+constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 4;
 
 struct empty_callable
 {};
@@ -196,6 +202,8 @@ private:
 
   typename callable_base<ReturnT, ArgTs...>::deleter_function_pointer m_deleter;
   typename callable_base<ReturnT, ArgTs...>::caller_function_pointer m_caller;
+  typename callable_base<ReturnT, ArgTs...>::copier_function_pointer m_copier;
+  typename callable_base<ReturnT, ArgTs...>::mover_function_pointer m_mover;
 
   bool m_empty;
 
@@ -204,4 +212,4 @@ private:
 
 }
 
-#include "callable.implement.hpp"
+#include "callable.inl"
