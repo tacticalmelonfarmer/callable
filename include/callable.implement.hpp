@@ -1,4 +1,86 @@
+#define SFINAE_CHECK                                                           \
+  {                                                                            \
+    return {};                                                                 \
+  }
+
 namespace callable {
+
+inline namespace detail {
+namespace sfinae {
+// clang-format off
+      template<typename T, typename ReturnT, typename... ArgTs>
+      struct generic_call_operator
+      {
+        using type0 = ReturnT(T::*)(ArgTs...);
+        using type1 = ReturnT(T::*)(ArgTs...) const;
+        using type2 = ReturnT(T::*)(ArgTs...) volatile;
+        using type3 = ReturnT(T::*)(ArgTs...) const volatile;
+        using type4 = ReturnT(T::*)(ArgTs...) &;
+        using type5 = ReturnT(T::*)(ArgTs...) const &;
+        using type6 = ReturnT(T::*)(ArgTs...) volatile &;
+        using type7 = ReturnT(T::*)(ArgTs...) const volatile &;
+        using type8 = ReturnT(T::*)(ArgTs...) &&;
+        using type9 = ReturnT(T::*)(ArgTs...) const &&;
+        using type10 = ReturnT(T::*)(ArgTs...) volatile &&;
+        using type11 = ReturnT(T::*)(ArgTs...) const volatile &&;
+        static constexpr type0 check(type0) SFINAE_CHECK
+        static constexpr type1 check(type1) SFINAE_CHECK
+        static constexpr type2 check(type2) SFINAE_CHECK
+        static constexpr type3 check(type3) SFINAE_CHECK
+        static constexpr type4 check(type4) SFINAE_CHECK
+        static constexpr type5 check(type5) SFINAE_CHECK
+        static constexpr type6 check(type6) SFINAE_CHECK
+        static constexpr type7 check(type7) SFINAE_CHECK
+        static constexpr type8 check(type8) SFINAE_CHECK
+        static constexpr type9 check(type9) SFINAE_CHECK
+        static constexpr type10 check(type10) SFINAE_CHECK
+        static constexpr type11 check(type11) SFINAE_CHECK
+        using type = decltype(check(&T::operator()));
+      };
+
+      template<typename T>
+      decltype(::std::is_pointer_v<T>&& ::std::is_function_v<::std::remove_pointer_t<T>>) is_function_pointer;
+// clang-format on
+
+// this initializes deduction_guide for lambdas or functors
+template<typename T>
+struct deduction_guide
+{
+  using type = typename deduction_guide<decltype(&T::operator())>::type;
+};
+
+// this guides deduction for free/static-member function pointers
+template<typename ReturnT, typename... ArgTs>
+struct deduction_guide<ReturnT (*)(ArgTs...)>
+{
+  using type = ReturnT(ArgTs...);
+};
+
+// this guides deduction for functors or mutable lambdas
+template<typename ClassT, typename ReturnT, typename... ArgTs>
+struct deduction_guide<ReturnT (ClassT::*)(ArgTs...)>
+{
+  using type = ReturnT(ArgTs...);
+};
+
+// this guides deduction for lambdas or const functors
+template<typename ClassT, typename ReturnT, typename... ArgTs>
+struct deduction_guide<ReturnT (ClassT::*)(ArgTs...) const>
+{
+  using type = ReturnT(ArgTs...);
+};
+} // namespace sfinae
+} // namespace detail
+
+template<typename u, typename T>
+callable(u, T)
+  ->callable<typename sfinae::deduction_guide<T>::type,
+             default_callable_capacity>;
+
+template<typename T>
+callable(T)
+  ->callable<typename sfinae::deduction_guide<T>::type,
+             default_callable_capacity>;
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
 template<typename ClassT, typename MemPtrT>
@@ -16,8 +98,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object, MemPtrT member)
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.*
-            (object->m_member))(arguments...);
+    return (object->m_object.*(object->m_member))(arguments...);
   };
 }
 
@@ -42,27 +123,25 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object)
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.*
-            (object->m_member))(arguments...);
+    return (object->m_object.*(object->m_member))(arguments...);
   };
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
 template<typename ClassT, typename MemPtrT>
-callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object,
-                                                          MemPtrT member)
+callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object, MemPtrT member)
   : m_empty(false)
 {
   using concrete_type =
     member_function_raw_pointer<ClassT, MemPtrT, ReturnT, ArgTs...>;
   static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-  ::new (access()) concrete_type(::std::forward<ClassT>(object), member);
+  ::new (access()) concrete_type(object, member);
   m_deleter = [](auto base) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     object->~concrete_type();
   };
-  m_caller = [](auto base, in_place_forward_t<ArgTs>... arguments) {
+  m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
     return (object->m_object->*(object->m_member))(arguments...);
@@ -81,7 +160,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object)
     member_function_raw_pointer<ClassT, call_operator_ptr_t, ReturnT, ArgTs...>;
   static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
   ::new (access())
-    concrete_type(::std::forward<ClassT>(object), &class_type::operator());
+    concrete_type(object, &class_type::operator());
   m_deleter = [](auto base) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -98,13 +177,13 @@ template<typename ReturnT, typename... ArgTs, size_t Capacity>
 template<typename ClassT, typename MemPtrT>
 callable<ReturnT(ArgTs...), Capacity>::callable(
   const ::std::shared_ptr<ClassT>& object,
-                                      MemPtrT member)
+  MemPtrT member)
   : m_empty(false)
 {
   using concrete_type =
     member_function_smart_pointer<ClassT, MemPtrT, ReturnT, ArgTs...>;
   static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-  ::new (access()) concrete_type(::std::forward<ClassT>(object), member);
+  ::new (access()) concrete_type(object, member);
   m_deleter = [](auto base) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -131,7 +210,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
                                                       ArgTs...>;
   static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
   ::new (access())
-    concrete_type(::std::forward<ClassT>(object), &ClassT::operator());
+    concrete_type(object, &ClassT::operator());
   m_deleter = [](auto base) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -145,8 +224,56 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
+template<typename ClassT, typename MemPtrT>
 callable<ReturnT(ArgTs...), Capacity>::callable(
-  function_type* function_pointer)
+  ::std::shared_ptr<ClassT>&& object,
+  MemPtrT member)
+  : m_empty(false)
+{
+  using concrete_type =
+    member_function_smart_pointer<ClassT, MemPtrT, ReturnT, ArgTs...>;
+  static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
+  ::new (access()) concrete_type(std::move(object), member);
+  m_deleter = [](auto base) {
+    auto object =
+      const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
+    object->~concrete_type();
+  };
+  m_caller = [](auto base, auto... arguments) {
+    auto object =
+      const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
+    return (object->m_object.get()->*(object->m_member))(arguments...);
+  };
+}
+
+template<typename ReturnT, typename... ArgTs, size_t Capacity>
+template<typename ClassT>
+callable<ReturnT(ArgTs...), Capacity>::callable(
+  ::std::shared_ptr<ClassT>&& object)
+  : m_empty(false)
+{
+  using call_operator_ptr_t =
+    typename sfinae::generic_call_operator<ClassT, ReturnT, ArgTs...>::type;
+  using concrete_type = member_function_smart_pointer<ClassT,
+                                                      call_operator_ptr_t,
+                                                      ReturnT,
+                                                      ArgTs...>;
+  static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
+  ::new (access()) concrete_type(std::move(object), &ClassT::operator());
+  m_deleter = [](auto base) {
+    auto object =
+      const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
+    object->~concrete_type();
+  };
+  m_caller = [](auto base, auto... arguments) {
+    auto object =
+      const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
+    return (object->m_object.get()->*(object->m_member))(arguments...);
+  };
+}
+
+template<typename ReturnT, typename... ArgTs, size_t Capacity>
+callable<ReturnT(ArgTs...), Capacity>::callable(function_type* function_pointer)
   : m_empty(false)
 {
   using concrete_type = free_function<ReturnT, ArgTs...>;
@@ -166,8 +293,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable()
 {}
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
-callable<ReturnT(ArgTs...), Capacity>::callable(
-  const this_type& other)
+callable<ReturnT(ArgTs...), Capacity>::callable(const this_type& other)
 {
   destroy();
   if (other.m_empty) {
@@ -180,8 +306,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
 }
 
 template<typename ReturnT, typename... ArgTs, size_t Capacity>
-callable<ReturnT(ArgTs...), Capacity>::callable(
-  this_type&& other) noexcept
+callable<ReturnT(ArgTs...), Capacity>::callable(this_type&& other) noexcept
 {
   destroy();
   if (other.m_empty) {

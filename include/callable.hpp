@@ -104,78 +104,9 @@ struct free_function : callable_base<ReturnT, ArgTs...>
   function_pointer_type m_function_ptr;
 };
 
-#define SFINAE_CHECK                                                           \
-  {                                                                            \
-    return {};                                                                 \
-  }
-
-namespace sfinae {
-// clang-format off
-      template<typename T, typename ReturnT, typename... ArgTs>
-      struct generic_call_operator
-      {
-        using type0 = ReturnT(T::*)(ArgTs...);
-        using type1 = ReturnT(T::*)(ArgTs...) const;
-        using type2 = ReturnT(T::*)(ArgTs...) volatile;
-        using type3 = ReturnT(T::*)(ArgTs...) const volatile;
-        using type4 = ReturnT(T::*)(ArgTs...) &;
-        using type5 = ReturnT(T::*)(ArgTs...) const &;
-        using type6 = ReturnT(T::*)(ArgTs...) volatile &;
-        using type7 = ReturnT(T::*)(ArgTs...) const volatile &;
-        using type8 = ReturnT(T::*)(ArgTs...) &&;
-        using type9 = ReturnT(T::*)(ArgTs...) const &&;
-        using type10 = ReturnT(T::*)(ArgTs...) volatile &&;
-        using type11 = ReturnT(T::*)(ArgTs...) const volatile &&;
-        static constexpr type0 check(type0) SFINAE_CHECK
-        static constexpr type1 check(type1) SFINAE_CHECK
-        static constexpr type2 check(type2) SFINAE_CHECK
-        static constexpr type3 check(type3) SFINAE_CHECK
-        static constexpr type4 check(type4) SFINAE_CHECK
-        static constexpr type5 check(type5) SFINAE_CHECK
-        static constexpr type6 check(type6) SFINAE_CHECK
-        static constexpr type7 check(type7) SFINAE_CHECK
-        static constexpr type8 check(type8) SFINAE_CHECK
-        static constexpr type9 check(type9) SFINAE_CHECK
-        static constexpr type10 check(type10) SFINAE_CHECK
-        static constexpr type11 check(type11) SFINAE_CHECK
-        using type = decltype(check(&T::operator()));
-      };
-
-      template<typename T>
-      decltype(::std::is_pointer_v<T>&& ::std::is_function_v<::std::remove_pointer_t<T>>) is_function_pointer;
-// clang-format on
-
-// this initializes deduction_guide for lambdas or functors
-template<typename T>
-struct deduction_guide
-{
-  using type = typename deduction_guide<decltype(&T::operator())>::type;
-};
-
-// this guides deduction for free/static-member function pointers
-template<typename ReturnT, typename... ArgTs>
-struct deduction_guide<ReturnT (*)(ArgTs...)>
-{
-  using type = ReturnT(ArgTs...);
-};
-
-// this guides deduction for functors or mutable lambdas
-template<typename ClassT, typename ReturnT, typename... ArgTs>
-struct deduction_guide<ReturnT (ClassT::*)(ArgTs...)>
-{
-  using type = ReturnT(ArgTs...);
-};
-
-// this guides deduction for lambdas or const functors
-template<typename ClassT, typename ReturnT, typename... ArgTs>
-struct deduction_guide<ReturnT (ClassT::*)(ArgTs...) const>
-{
-  using type = ReturnT(ArgTs...);
-};
-} // namespace sfinae
 } // namespace detail
 
-constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 2;
+constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 3;
 
 struct empty_callable
 {};
@@ -211,11 +142,20 @@ struct callable<ReturnT(ArgTs...), Capacity>
   // points to an object and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
-  callable(const ::std::shared_ptr<ClassT>& object, MemPtrT member);
+  callable(const std::shared_ptr<ClassT>& object, MemPtrT member);
 
   // points to an object and points to it's call operator `ClassT::operator()`
   template<typename ClassT>
-  callable(const ::std::shared_ptr<ClassT>& object);
+  callable(const std::shared_ptr<ClassT>& object);
+
+   // points to an object and holds a pointer to non-static member function of
+  // the held object
+  template<typename ClassT, typename MemPtrT>
+  callable(::std::shared_ptr<ClassT>&& object, MemPtrT member);
+
+  // points to an object and points to it's call operator `ClassT::operator()`
+  template<typename ClassT>
+  callable(::std::shared_ptr<ClassT>&& object);
 
   // points to a callable using a pointer to function
   callable(function_type* function_pointer);
@@ -262,15 +202,6 @@ private:
   ::std::aligned_storage_t<Capacity, alignof(::std::max_align_t)> m_storage;
 };
 
-template<typename u, typename T>
-callable(u, T)
-  ->callable<typename sfinae::deduction_guide<T>::type,
-             default_callable_capacity>;
-
-template<typename T>
-callable(T)
-  ->callable<typename sfinae::deduction_guide<T>::type,
-             default_callable_capacity>;
 }
 
 #include "callable.implement.hpp"
