@@ -24,7 +24,7 @@ free_function(int value)
 int
 main()
 {
-  using fn = callable::callable<int(int)>;
+  using fn = tmf::callable<int(int)>;
   int failures = 0;
 
   // to initialize with a functor, provide a class instance

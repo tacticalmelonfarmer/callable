@@ -24,7 +24,7 @@ struct object
 int
 main()
 {
-  using fn = callable::callable<int(int)>;
+  using fn = tmf::callable<int(int)>;
 
   // functor[0], called twice due to copy
   fn a{ functor{ 0 } };

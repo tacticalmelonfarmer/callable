@@ -10,7 +10,7 @@
   "capacity might help; Or try decoupling state from functionality if "        \
   "possible."
 
-namespace callable {
+namespace tmf { // represent
 using size_t = decltype(sizeof(0));
 
 inline namespace detail {

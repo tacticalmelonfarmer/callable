@@ -24,7 +24,7 @@ free_function(int)
 int
 main()
 {
-  using fn = callable::callable<int(int)>;
+  using fn = tmf::callable<int(int)>;
 
   // default initialize an empty callable 'a'
   fn a{};

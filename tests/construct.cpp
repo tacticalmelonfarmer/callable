@@ -33,7 +33,7 @@ main()
   // default value is `sizeof(std::uintptr_t) * 2`,
   //   which is a common size for anything other than lambdas/functors that
   //   capture or contain large objects
-  using fn = callable::callable<int(int)>;
+  using fn = tmf::callable<int(int)>;
 
   // to initialize with a functor, provide a class instance
   // - you can provide an rvalue to have your instance possibly moved into the

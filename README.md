@@ -21,10 +21,10 @@ target_link_libraries(my_target callable)
 add **include/** directory to your build config for targets that need to use this library
 
 ## Usage
-To access the `callable::callable` class, simply:
+To access the `tmf::callable` class, simply:
 ```c++
 #include <callable.hpp>
-using callable::callable;
+using tmf::callable;
 ...
 ```
 To use the class, initialize or assign with any compatible type[s].
