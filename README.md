@@ -1,4 +1,6 @@
 # Callable
+This tiny library is header-only and template-only, therefore it **cannot** be pre-compiled into a static/shared library.
+
 Any object, pointer or member function `x` that can be called like a function with `operator()` can be represented by a `callable`.
 Things that are callable comapatible:
  - function pointers: addresses of free functions or static member functions
@@ -17,8 +19,10 @@ and for any targets that need to use the library, do:
 target_link_libraries(my_target callable)
 ```
 
-### Manual
-add **include/** directory to your build config for targets that need to use this library
+### Not using CMake? No problem.
+here are ways you can do it without cmake:
+1. add **include/** directory to your build config for targets that need to use this library
+2. just copy the headers and stick 'em where you need 'em.
 
 ## Usage
 To access the `tmf::callable` class, simply:
@@ -75,6 +79,8 @@ op1 = { stats, &statistic::accumulate }; // :)
 // of course you can do it all in one line
 callable op2{ statistic{}, &statistic::average };
 ```
+
+**Check out the unit tests to see all the different ways to use a `callable`**
 ## Stack allocated
 All `callable`s store their instances on the stack, and allow you to specify a fixed size as the second template argument. However, you can provide a **raw pointer** or a `shared_ptr` instead, to avoid copying or moving objects.
 
