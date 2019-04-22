@@ -52,6 +52,10 @@ struct callable_base
              callable_base<ReturnT, ArgTs...>&&);
 };
 
+template<typename T>
+struct generic_tag
+{};
+
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function : callable_base<ReturnT, ArgTs...>
 {

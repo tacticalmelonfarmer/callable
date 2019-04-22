@@ -7,6 +7,7 @@ namespace tmf {
 
 inline namespace detail {
 namespace sfinae {
+
 // clang-format off
       template<typename T, typename ReturnT, typename... ArgTs>
       struct generic_call_operator
@@ -35,6 +36,7 @@ namespace sfinae {
         static constexpr type9 check(type9) SFINAE_CHECK
         static constexpr type10 check(type10) SFINAE_CHECK
         static constexpr type11 check(type11) SFINAE_CHECK
+		static constexpr generic_tag<T> check(...) SFINAE_CHECK
         using type = decltype(check(&T::operator()));
       };
 
@@ -69,6 +71,14 @@ struct deduction_guide<ReturnT (ClassT::*)(ArgTs...) const>
 {
   using type = ReturnT(ArgTs...);
 };
+
+// this guides deduction for generic lambdas
+template<typename T>
+struct deduction_guide<generic_tag<T>>
+{
+  using type = generic_tag<T>;
+};
+
 } // namespace sfinae
 } // namespace detail
 
@@ -98,7 +108,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object, MemPtrT member)
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.*(object->m_member))(arguments...);
+    return (object->m_object.*(object->m_member))(static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -129,7 +139,8 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object)
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.*(object->m_member))(arguments...);
+    return (object->m_object.*
+            (object->m_member))(static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -156,7 +167,8 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object, MemPtrT member)
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object->*(object->m_member))(arguments...);
+    return (object->m_object->*(object->m_member))(
+      static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -186,7 +198,8 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object)
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object->*(object->m_member))(arguments...);
+    return (object->m_object->*(object->m_member))(
+      static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -215,7 +228,8 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.get()->*(object->m_member))(arguments...);
+    return (object->m_object.get()->*(object->m_member))(
+      static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -247,7 +261,8 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.get()->*(object->m_member))(arguments...);
+    return (object->m_object.get()->*(object->m_member))(
+      static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -276,7 +291,8 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.get()->*(object->m_member))(arguments...);
+    return (object->m_object.get()->*(object->m_member))(
+      static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -308,7 +324,8 @@ callable<ReturnT(ArgTs...), Capacity>::callable(
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (object->m_object.get()->*(object->m_member))(arguments...);
+    return (object->m_object.get()->*(object->m_member))(
+      static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
@@ -329,7 +346,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(function_type* function_pointer)
   m_caller = [](auto base, auto... arguments) {
     auto object =
       const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-    return (*object->m_function_ptr)(arguments...);
+    return (*object->m_function_ptr)(static_cast<ArgTs>(arguments)...);
   };
   m_copier = [](auto& base, const auto& other_base) {
     ::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
