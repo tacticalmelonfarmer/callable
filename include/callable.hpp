@@ -6,7 +6,7 @@
 #include <utility>
 
 #define CALLABLE_ERROR                                                         \
-  "`callable::callable` cannot hold a callable this large! Increasing "        \
+  "`tmf::callable` cannot hold a callable this large! Increasing "        \
   "capacity might help; Or try decoupling state from functionality if "        \
   "possible."
 
