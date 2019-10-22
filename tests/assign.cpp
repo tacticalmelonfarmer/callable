@@ -1,20 +1,22 @@
+#include <iostream>
+#include <cassert>
 #include <callable.hpp>
 
 struct functor
 {
-  int operator()(int) { return 0; }
+  int operator()(int v) { return v; }
 };
 
 struct object
 {
-  int method(int) { return 0; }
-  static int static_method(int) { return 0; }
+  int method(int v) { return v; }
+  static int static_method(int v) { return v; }
 };
 
 int
-free_function(int)
+free_function(int v)
 {
-  return 0;
+  return v;
 }
 
 /*
@@ -30,18 +32,18 @@ main()
   fn a{};
 
   // assign 'a' with a class with `int operator()(int)` defined
-  // - provide an rvalue to have your object possibly moved into the callable
-  a = functor{};
-  // - you can provide an lvalue to have your instance copied into the callable
+  // provide an rvalue to have your object possibly moved into the callable
+		a = functor{};
+  // you can provide an lvalue to have your instance copied into the callable
   functor functor_init{};
   a = functor_init;
 
   // to initialize with an arbitrary member function provide a class instance
   // and a pointer to member function
-  // - you can provide an rvalue to have your instance possibly moved into the
+  // you can provide an rvalue to have your instance possibly moved into the
   // callable
   a = { object{}, &object::method };
-  // - you can provide an lvalue to have your instance copied into the callable
+  // you can provide an lvalue to have your instance copied into the callable
   object object_init{};
   a = { object_init, &object::method };
 

@@ -2,22 +2,20 @@ cmake_minimum_required(VERSION 3.11)
 
 project(callable)
 
-add_library(callable INTERFACE)
-target_compile_features(callable INTERFACE cxx_std_17)
-target_include_directories(callable INTERFACE include)
+enable_testing()
 
-if(BUILD_UNIT_TESTS)
+set(PROJECT)
 
-add_executable(construct tests/construct.cpp)
-target_link_libraries(construct callable)
+add_library(libcallable INTERFACE)
+target_compile_features(libcallable INTERFACE cxx_std_17)
+target_include_directories(libcallable INTERFACE include)
 
-add_executable(destroy tests/destroy.cpp)
-target_link_libraries(destroy callable)
+file(GLOB TestsSources RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests "*.cpp")
 
-add_executable(assign tests/assign.cpp)
-target_link_libraries(assign callable)
+foreach(TestSource ${TestsSources})
 
-add_executable(call tests/call.cpp)
-target_link_libraries(call callable)
+string(REPLACE ".cpp" "" TestName ${TestSource})
+add_executable(${TestName} tests/${TestSource})
+target_link_libraries(${TestName} libcallable)
 
-endif()
+endforeach()

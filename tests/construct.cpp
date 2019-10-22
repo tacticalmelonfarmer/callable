@@ -30,7 +30,7 @@ main()
   // - function signature (not the return type) must not be a pointer or
   // reference type and must not be [const, volatile, &, &&] qualified
   // - capacity[optional] is the size of allocated (stack based) storage;
-  // default value is `sizeof(std::uintptr_t) * 2`,
+  // default value is `sizeof(std::uintptr_t) * 4`,
   //   which is a common size for anything other than lambdas/functors that
   //   capture or contain large objects
   using fn = tmf::callable<int(int)>;
