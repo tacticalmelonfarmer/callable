@@ -1,4 +1,5 @@
 cpp.hint
 .vs/
-/CMakeSettings.json
-/out/build/x64-Debug
+CMakeSettings.json
+out/
+build/
