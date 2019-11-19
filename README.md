@@ -72,12 +72,13 @@ private:
 };
 
 // default initialize, just to show that you can assign from a braced-init-list
-callable<void(int)> operation{};
-statistic stats{};
-op1 = { stats, &statistic::accumulate }; // :)
+callable<void(int)> op1{};
+statistic stat1{};
+op1 = { stat1, &statistic::accumulate };
 
-// of course you can do it all in one line
-callable op2{ statistic{}, &statistic::average };
+// of course you can do it all in one line, with some rvalues
+callable<void()> op2{ statistic{}, &statistic::average };
+callable op3{ statistic{}, &statistic::average };
 ```
 
 **Check out the unit tests to see all the different ways to use a `callable`**
