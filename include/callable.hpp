@@ -116,7 +116,7 @@ struct free_function : callable_base<ReturnT, ArgTs...>
 
 } // namespace detail
 
-constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 4;
+static constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 4;
 
 struct empty_callable
 {};
