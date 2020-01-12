@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstddef>
+#include <stdexcept>
+#include <string>
 #include <memory>
 #include <type_traits>
 #include <utility>
@@ -61,10 +63,10 @@ struct member_function : callable_base<ReturnT, ArgTs...>
 {
   template<typename FwdClassT,
            typename =
-             ::std::enable_if_t<::std::is_member_function_pointer_v<MemPtrT> &&
-                                !::std::is_const_v<ClassT>>>
+             std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
+                                !std::is_const_v<ClassT>>>
   member_function(FwdClassT&& object, MemPtrT member)
-    : m_object(::std::forward<FwdClassT>(object))
+    : m_object(std::forward<FwdClassT>(object))
     , m_member(member)
   {}
 
@@ -76,15 +78,15 @@ template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 {
   template<typename =
-             ::std::enable_if_t<::std::is_member_function_pointer_v<MemPtrT> &&
-                                !::std::is_const_v<ClassT>>>
-  member_function_smart_pointer(const ::std::shared_ptr<ClassT>& object,
+             std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
+                                !std::is_const_v<ClassT>>>
+  member_function_smart_pointer(const std::shared_ptr<ClassT>& object,
                                 MemPtrT member)
     : m_object(object)
     , m_member(member)
   {}
 
-  ::std::shared_ptr<ClassT> m_object;
+  std::shared_ptr<ClassT> m_object;
   MemPtrT m_member;
 };
 
@@ -92,8 +94,8 @@ template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_raw_pointer : callable_base<ReturnT, ArgTs...>
 {
   template<typename =
-             ::std::enable_if_t<::std::is_member_function_pointer_v<MemPtrT> &&
-                                !::std::is_const_v<ClassT>>>
+             std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
+                                !std::is_const_v<ClassT>>>
   member_function_raw_pointer(ClassT* object, MemPtrT member)
     : m_object(object)
     , m_member(member)
@@ -118,8 +120,12 @@ struct free_function : callable_base<ReturnT, ArgTs...>
 
 static constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 4;
 
-struct empty_callable
-{};
+struct empty_callable : std::runtime_error
+{
+  empty_callable(const std::string& what)
+    : std::runtime_error("[empty_callable]: " + what)
+  {}
+};
 
 template<typename, size_t = default_callable_capacity>
 struct callable;
@@ -158,19 +164,20 @@ struct callable<ReturnT(ArgTs...), Capacity>
   template<typename ClassT>
   callable(const std::shared_ptr<ClassT>& object);
 
-   // points to an object and holds a pointer to non-static member function of
+  // points to an object and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
-  callable(::std::shared_ptr<ClassT>&& object, MemPtrT member);
+  callable(std::shared_ptr<ClassT>&& object, MemPtrT member);
 
   // points to an object and points to it's call operator `ClassT::operator()`
   template<typename ClassT>
-  callable(::std::shared_ptr<ClassT>&& object);
+  callable(std::shared_ptr<ClassT>&& object);
 
   // points to a callable using a pointer to function
   callable(function_type* function_pointer);
 
   // default initialize to be an empty function<...>
+  // the storage is considered to have an invalid source
   callable();
 
   // copy construct
@@ -189,16 +196,22 @@ struct callable<ReturnT(ArgTs...), Capacity>
   template<typename... FwdArgTs>
   ReturnT operator()(FwdArgTs&&... arguments);
 
+  // call the stored function, from const source
   template<typename... FwdArgTs>
   ReturnT operator()(FwdArgTs&&... arguments) const;
+
+  // check if a valid source is stored
+  // if false, invoking `operator(...)` will only throw if/what the stored function throws
+  // if true, invoking `operator(...)` will immediately throw an `empty_callable` exception
+  bool empty() const;
 
   ~callable();
 
 private:
   // alias the storage address as a polymorphic pointer to our base class
-  constexpr auto access();
+  callable_base<ReturnT, ArgTs...>* access();
 
-  constexpr auto access() const;
+  const callable_base<ReturnT, ArgTs...>* access() const;
 
   // check if empty or trivially destructible, if not then call the destructor
   // for the type-erased object
@@ -211,7 +224,7 @@ private:
 
   bool m_empty;
 
-  ::std::aligned_storage_t<Capacity, alignof(::std::max_align_t)> m_storage;
+  std::aligned_storage_t<Capacity, alignof(std::max_align_t)> m_storage;
 };
 
 }

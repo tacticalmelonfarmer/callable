@@ -24,6 +24,19 @@ namespace tmf {
 								using type9 = ReturnT(T::*)(ArgTs...) const&&;
 								using type10 = ReturnT(T::*)(ArgTs...) volatile&&;
 								using type11 = ReturnT(T::*)(ArgTs...) const volatile&&;
+								// noexcept variants
+								using type12 = ReturnT(T::*)(ArgTs...) noexcept;
+								using type13 = ReturnT(T::*)(ArgTs...) const noexcept;
+								using type14 = ReturnT(T::*)(ArgTs...) volatile noexcept;
+								using type15 = ReturnT(T::*)(ArgTs...) const volatile noexcept;
+								using type16 = ReturnT(T::*)(ArgTs...) & noexcept;
+								using type17 = ReturnT(T::*)(ArgTs...) const& noexcept;
+								using type18 = ReturnT(T::*)(ArgTs...) volatile& noexcept;
+								using type19 = ReturnT(T::*)(ArgTs...) const volatile& noexcept;
+								using type20 = ReturnT(T::*)(ArgTs...) && noexcept;
+								using type21 = ReturnT(T::*)(ArgTs...) const&& noexcept;
+								using type22 = ReturnT(T::*)(ArgTs...) volatile&& noexcept;
+								using type23 = ReturnT(T::*)(ArgTs...) const volatile&& noexcept;
 								static constexpr type0 check(type0) SFINAE_CHECK
 										static constexpr type1 check(type1) SFINAE_CHECK
 										static constexpr type2 check(type2) SFINAE_CHECK
@@ -36,12 +49,26 @@ namespace tmf {
 										static constexpr type9 check(type9) SFINAE_CHECK
 										static constexpr type10 check(type10) SFINAE_CHECK
 										static constexpr type11 check(type11) SFINAE_CHECK
+										static constexpr type12 check(type12) SFINAE_CHECK
+										// noexcept variants
+										static constexpr type13 check(type13) SFINAE_CHECK
+										static constexpr type14 check(type14) SFINAE_CHECK
+										static constexpr type15 check(type15) SFINAE_CHECK
+										static constexpr type16 check(type16) SFINAE_CHECK
+										static constexpr type17 check(type17) SFINAE_CHECK
+										static constexpr type18 check(type18) SFINAE_CHECK
+										static constexpr type19 check(type19) SFINAE_CHECK
+										static constexpr type20 check(type20) SFINAE_CHECK
+										static constexpr type21 check(type21) SFINAE_CHECK
+										static constexpr type22 check(type22) SFINAE_CHECK
+										static constexpr type23 check(type23) SFINAE_CHECK
+										
 										static constexpr generic_tag<T> check(...) SFINAE_CHECK
 										using type = decltype(check(&T::operator()));
 						};
 
 						template<typename T>
-						decltype(::std::is_pointer_v<T>&& ::std::is_function_v<::std::remove_pointer_t<T>>) is_function_pointer;
+						decltype(std::is_pointer_v<T>&& std::is_function_v<std::remove_pointer_t<T>>) is_function_pointer;
 						// clang-format on
 
 						// this initializes deduction_guide for lambdas or functors
@@ -99,7 +126,7 @@ namespace tmf {
 		{
 				using concrete_type = member_function<ClassT, MemPtrT, ReturnT, ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(::std::forward<ClassT>(object), member);
+				new (access()) concrete_type(std::forward<ClassT>(object), member);
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -111,10 +138,10 @@ namespace tmf {
 						return (object->m_object.*(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
@@ -123,14 +150,14 @@ namespace tmf {
 		callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object)
 				: m_empty(false)
 		{
-				using class_type = ::std::remove_reference_t<ClassT>;
+				using class_type = std::remove_reference_t<ClassT>;
 				using call_operator_ptr_t =
 						typename sfinae::generic_call_operator<class_type, ReturnT, ArgTs...>::type;
 				using concrete_type =
 						member_function<ClassT, call_operator_ptr_t, ReturnT, ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access())
-						concrete_type(::std::forward<ClassT>(object), &class_type::operator());
+				new (access())
+						concrete_type(std::forward<ClassT>(object), &class_type::operator());
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -143,10 +170,10 @@ namespace tmf {
 								(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
@@ -158,7 +185,7 @@ namespace tmf {
 				using concrete_type =
 						member_function_raw_pointer<ClassT, MemPtrT, ReturnT, ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(object, member);
+				new (access()) concrete_type(object, member);
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -170,10 +197,10 @@ namespace tmf {
 						return (object->m_object->*(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
@@ -182,13 +209,13 @@ namespace tmf {
 		callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object)
 				: m_empty(false)
 		{
-				using class_type = ::std::remove_reference_t<ClassT>;
+				using class_type = std::remove_reference_t<ClassT>;
 				using call_operator_ptr_t =
 						typename sfinae::generic_call_operator<class_type, ReturnT, ArgTs...>::type;
 				using concrete_type =
 						member_function_raw_pointer<ClassT, call_operator_ptr_t, ReturnT, ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(object, &class_type::operator());
+				new (access()) concrete_type(object, &class_type::operator());
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -200,24 +227,24 @@ namespace tmf {
 						return (object->m_object->*(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
 		template<typename ReturnT, typename... ArgTs, size_t Capacity>
 		template<typename ClassT, typename MemPtrT>
 		callable<ReturnT(ArgTs...), Capacity>::callable(
-				const ::std::shared_ptr<ClassT>& object,
+				const std::shared_ptr<ClassT>& object,
 				MemPtrT member)
 				: m_empty(false)
 		{
 				using concrete_type =
 						member_function_smart_pointer<ClassT, MemPtrT, ReturnT, ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(object, member);
+				new (access()) concrete_type(object, member);
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -229,17 +256,17 @@ namespace tmf {
 						return (object->m_object.get()->*(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
 		template<typename ReturnT, typename... ArgTs, size_t Capacity>
 		template<typename ClassT>
 		callable<ReturnT(ArgTs...), Capacity>::callable(
-				const ::std::shared_ptr<ClassT>& object)
+				const std::shared_ptr<ClassT>& object)
 				: m_empty(false)
 		{
 				using call_operator_ptr_t =
@@ -249,7 +276,7 @@ namespace tmf {
 						ReturnT,
 						ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(object, &ClassT::operator());
+				new (access()) concrete_type(object, &ClassT::operator());
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -261,24 +288,24 @@ namespace tmf {
 						return (object->m_object.get()->*(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
 		template<typename ReturnT, typename... ArgTs, size_t Capacity>
 		template<typename ClassT, typename MemPtrT>
 		callable<ReturnT(ArgTs...), Capacity>::callable(
-				::std::shared_ptr<ClassT>&& object,
+				std::shared_ptr<ClassT>&& object,
 				MemPtrT member)
 				: m_empty(false)
 		{
 				using concrete_type =
 						member_function_smart_pointer<ClassT, MemPtrT, ReturnT, ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(std::move(object), member);
+				new (access()) concrete_type(std::move(object), member);
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -290,17 +317,17 @@ namespace tmf {
 						return (object->m_object.get()->*(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
 		template<typename ReturnT, typename... ArgTs, size_t Capacity>
 		template<typename ClassT>
 		callable<ReturnT(ArgTs...), Capacity>::callable(
-				::std::shared_ptr<ClassT>&& object)
+				std::shared_ptr<ClassT>&& object)
 				: m_empty(false)
 		{
 				using call_operator_ptr_t =
@@ -310,7 +337,7 @@ namespace tmf {
 						ReturnT,
 						ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(std::move(object), &ClassT::operator());
+				new (access()) concrete_type(std::move(object), &ClassT::operator());
 				m_deleter = [](auto base) {
 						auto object =
 								const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
@@ -322,10 +349,10 @@ namespace tmf {
 						return (object->m_object.get()->*(object->m_member))(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
@@ -335,7 +362,7 @@ namespace tmf {
 		{
 				using concrete_type = free_function<ReturnT, ArgTs...>;
 				static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
-				::new (access()) concrete_type(function_pointer);
+				new (access()) concrete_type(function_pointer);
 				m_deleter = nullptr;
 				m_caller = [](auto base, auto... arguments) {
 						auto object =
@@ -343,10 +370,10 @@ namespace tmf {
 						return (*object->m_function_ptr)(static_cast<decltype(arguments)>(arguments)...);
 				};
 				m_copier = [](auto& base, const auto& other_base) {
-						::new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
+						new (&base) concrete_type(static_cast<const concrete_type&>(other_base));
 				};
 				m_mover = [](auto& base, auto&& other_base) {
-						::new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
+						new (&base) concrete_type(static_cast<concrete_type&&>(other_base));
 				};
 		}
 
@@ -376,7 +403,7 @@ namespace tmf {
 				if (other.m_empty) {
 				}
 				else {
-						(*other.m_mover)(*access(), ::std::move(*other.access()));
+						(*other.m_mover)(*access(), std::move(*other.access()));
 						m_deleter = other.m_deleter;
 						m_caller = other.m_caller;
 						m_empty = false;
@@ -410,7 +437,7 @@ namespace tmf {
 						return *this;
 				}
 				else {
-						(*rhs.m_mover)(*access(), ::std::move(*rhs.access()));
+						(*rhs.m_mover)(*access(), std::move(*rhs.access()));
 						m_deleter = rhs.m_deleter;
 						m_caller = rhs.m_caller;
 						m_empty = false;
@@ -425,7 +452,7 @@ namespace tmf {
 				callable<ReturnT(ArgTs...), Capacity>::operator()(FwdArgTs&&... arguments)
 		{
 				if (m_empty)
-						throw empty_callable{};
+						throw empty_callable{ std::string(__FILE__) + "\n@\nline " + std::to_string(__LINE__) };
 				else
 						return (*m_caller)(access(), std::forward<FwdArgTs>(arguments)...);
 		}
@@ -436,9 +463,16 @@ namespace tmf {
 				callable<ReturnT(ArgTs...), Capacity>::operator()(FwdArgTs&&... arguments) const
 		{
 				if (m_empty)
-						throw empty_callable{};
+						throw empty_callable{ std::string(__FILE__) + "\n@\nline " + std::to_string(__LINE__) };
 				else
 						return (*m_caller)(access(), std::forward<FwdArgTs>(arguments)...);
+		}
+
+		template<typename ReturnT, typename... ArgTs, size_t Capacity>
+		bool
+				callable<ReturnT(ArgTs...), Capacity>::empty() const
+		{
+				return m_empty;
 		}
 
 		template<typename ReturnT, typename... ArgTs, size_t Capacity>
@@ -448,18 +482,18 @@ namespace tmf {
 		}
 
 		template<typename ReturnT, typename... ArgTs, size_t Capacity>
-		constexpr auto
+		callable_base<ReturnT, ArgTs...>*
 				callable<ReturnT(ArgTs...), Capacity>::access()
 		{
-				return ::std::launder(
+				return std::launder(
 						reinterpret_cast<callable_base<ReturnT, ArgTs...>*>(&m_storage));
 		}
 
 		template<typename ReturnT, typename... ArgTs, size_t Capacity>
-		constexpr auto
+		const callable_base<ReturnT, ArgTs...>*
 				callable<ReturnT(ArgTs...), Capacity>::access() const
 		{
-				return ::std::launder(
+				return std::launder(
 						reinterpret_cast<const callable_base<ReturnT, ArgTs...>*>(&m_storage));
 		}
 
