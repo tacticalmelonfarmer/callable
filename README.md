@@ -1,12 +1,19 @@
 # Callable
-This tiny library is header-only and template-only, therefore it **cannot** be pre-compiled into a static/shared library.
+This is a tiny header-only library, everything is in namespace `tmf`.
 
-Any object, pointer or member function `x` that can be called like a function with `operator()` can be represented by a `callable`.
-Things that are callable comapatible:
- - function pointers: addresses of free functions or static member functions
- - functors: classes which define `operator()`
- - lambdas: implicit language-generated functors
- - member functions: a class object or pointer paired with a pointer-to-member-function
+The primary type is the templated class `callable`; It is a container for any "functional" entity.
+It behaves like `std::function`, the difference being it is purely stack-allocated with an adjustable static capacity.
+When using a binding mechanism (~~std::bind~~, lambda, etc...), the entity must store the bound arguments somehow, hence the capacity (bytes, octets).
+
+Things that can initialize a `callable`:
+ - function pointer: address of free function or static member function
+ - functor: class which defines `operator()`
+ - functor pointer
+ - lambda: implicit language-generated functor
+ - lambda pointer
+ - object reference (rvalue or lvalue) + pointer-to-member-function
+ - object pointer + pointer-to-member-function
+ - object shared_ptr + pointer-to-member-function
 
 ## Setup
 ### CMake
@@ -16,75 +23,58 @@ add_subdirectory("path/to/callable/folder")
 ```
 and for any targets that need to use the library, do:
 ```cmake
-target_link_libraries(my_target callable)
+target_link_libraries(my_target libcallable)
 ```
 
 ### Not using CMake? No problem.
 here are ways you can do it without cmake:
-1. add **include/** directory to your build config for targets that need to use this library
-2. just copy the headers and stick 'em where you need 'em.
++ add **include/** directory to your build system for targets that need to use this library
++ just copy the headers and stick 'em where you need 'em.
 
 ## Usage
-To access the `tmf::callable` class, simply:
+*defer to the tests for in depth usage*
+
+for less typing you can:
 ```c++
 #include <callable.hpp>
 using tmf::callable;
-...
 ```
-To use the class, initialize or assign with any compatible type[s].
 
-for regular functions or static member functions:
+basic instantiation of a `callable` providing function signature and defaulted capacity:
 ```c++
-int increment(int i) { return i + 1; }
+void free_fn()
+{}
 
-struct math {
-  static int decrement(int i) { return i - 1; }
-};
-
- // initialize with free function pointer, and a specific function signature
-callable<int(int)> specified(&increment);
-
- // initialize with static member function pointer, function signature is deduced
-callable deduced(&math::decrement)
+int main()
+{
+ callable<void()> basic1{ &free_fn };
+ callable<void()> basic2{ free_fn };
+}
 ```
-for functors and lambdas:
+
+basic instantiation of a `callable` deducing function signature and defaulted capacity:
 ```c++
-struct adder {
-  int operator()(int a, int b) { return a + b; }
-};
+void free_fn()
+{}
 
-auto subtractor = [](int a, int b) { return a - b; };
-
-// give an instance, without a pointer-to-member-function, to assume `operator()`
-callable binary_operation{ adder{} };
-
-// reassign to a different type, as long as call signatures are compatible
-binary_operation = subtractor;
+int main()
+{
+ callable basic1{ &free_fn };
+ callable basic2{ free_fn };
+}
 ```
-for member functions with access to a `this` pointer:
+
+full instantiation of a `callable` providing function signature and providing capacity:
 ```c++
-struct statistic {
-  void accumulate(int i) { this->record += i; ++this->count; }
-  int average() { return record / count; }
-private:
-  int count = 0;
-  int record = 0;
-};
+void free_fn()
+{}
 
-// default initialize, just to show that you can assign from a braced-init-list
-callable<void(int)> op1{};
-statistic stat1{};
-op1 = { stat1, &statistic::accumulate };
-
-// of course you can do it all in one line, with some rvalues
-callable<void()> op2{ statistic{}, &statistic::average };
-callable op3{ statistic{}, &statistic::average };
+int main()
+{
+ callable<void(), 4> basic1{ &free_fn };
+ callable<void(), 4> basic2{ free_fn };
+}
 ```
 
-**Check out the unit tests to see all the different ways to use a `callable`**
-## Stack allocated
-All `callable`s store their instances on the stack, and allow you to specify a fixed size as the second template argument. However, you can provide a **raw pointer** or a `shared_ptr` instead, to avoid copying or moving objects.
-
-## Purpose
-The main reason I made this library is to unify the calling interface between many entities that are supported by C++
-and to make it simple, intuitive and predictable.
+## You can still use heap-backed entities
+All `callable`s store their source on the stack, and allow you to specify a fixed size as the second template argument. However, you can provide a **raw pointer** or a `shared_ptr` instead, to avoid copying or moving objects.
