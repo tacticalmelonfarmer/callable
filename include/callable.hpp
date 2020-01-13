@@ -44,7 +44,7 @@ struct callable_base
   using deleter_function_pointer =
     void (*)(const callable_base<ReturnT, ArgTs...>*);
   using caller_function_pointer =
-    ReturnT (*)(const callable_base<ReturnT, ArgTs...>*,
+    ReturnT (*)(bool, const callable_base<ReturnT, ArgTs...>*,
                 in_place_forward_t<ArgTs>...);
   using copier_function_pointer =
     void (*)(callable_base<ReturnT, ArgTs...>&,
@@ -53,10 +53,6 @@ struct callable_base
     void (*)(callable_base<ReturnT, ArgTs...>&,
              callable_base<ReturnT, ArgTs...>&&);
 };
-
-template<typename T>
-struct generic_tag
-{};
 
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function : callable_base<ReturnT, ArgTs...>
@@ -181,10 +177,16 @@ struct callable<ReturnT(ArgTs...), Capacity>
   callable();
 
   // copy construct
+  callable(this_type& other);
+
+  // copy construct
   callable(const this_type& other);
 
   // move construct
   callable(this_type&& other) noexcept;
+
+  // copy assignment
+  this_type& operator=(this_type& rhs);
 
   // copy assignment
   this_type& operator=(const this_type& rhs);

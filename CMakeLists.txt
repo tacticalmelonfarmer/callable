@@ -12,6 +12,9 @@ target_link_libraries(assign libcallable)
 add_executable(call tests/call.cpp)
 target_link_libraries(call libcallable)
 
+add_executable(parameter tests/parameter.cpp)
+target_link_libraries(parameter libcallable)
+
 add_executable(construct tests/construct.cpp)
 target_link_libraries(construct libcallable)
 
