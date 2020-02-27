@@ -17,35 +17,13 @@ using size_t = decltype(sizeof(0));
 
 inline namespace detail {
 
-template<typename T>
-struct in_place_forward
-{
-  using type = const T&;
-};
-
-template<typename T>
-struct in_place_forward<T&>
-{
-  using type = T&;
-};
-
-template<typename T>
-struct in_place_forward<T&&>
-{
-  using type = T&&;
-};
-
-template<typename T>
-using in_place_forward_t = typename in_place_forward<T>::type;
-
 template<typename ReturnT, typename... ArgTs>
 struct callable_base
 {
   using deleter_function_pointer =
     void (*)(const callable_base<ReturnT, ArgTs...>*);
   using caller_function_pointer =
-    ReturnT (*)(bool, const callable_base<ReturnT, ArgTs...>*,
-                in_place_forward_t<ArgTs>...);
+    ReturnT (*)(bool, const callable_base<ReturnT, ArgTs...>*, ArgTs...);
   using copier_function_pointer =
     void (*)(callable_base<ReturnT, ArgTs...>&,
              const callable_base<ReturnT, ArgTs...>&);

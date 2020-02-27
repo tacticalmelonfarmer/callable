@@ -1,3 +1,5 @@
+#pragma once
+
 #define SFINAE_CHECK                                                           \
   {                                                                            \
     return {};                                                                 \
@@ -143,14 +145,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -184,14 +186,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -224,14 +226,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -264,14 +266,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -305,14 +307,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -347,14 +349,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -388,14 +390,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -430,14 +432,14 @@ namespace tmf {
 								auto concrete = static_cast<const concrete_type*>(base);
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
 								auto source_object = concrete->m_object;
 								auto source_member = concrete->m_member;
-								return (source_object.get()->*source_member)(static_cast<decltype(arguments)>(arguments)...);
+								return (source_object.get()->*source_member)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
@@ -460,12 +462,12 @@ namespace tmf {
 						if (is_const)
 						{
 								auto concrete = static_cast<const concrete_type*>(base);
-								return (*concrete->m_function_ptr)(static_cast<decltype(arguments)>(arguments)...);
+								return (*concrete->m_function_ptr)(static_cast<ArgTs>(arguments)...);
 						}
 						else
 						{
 								auto concrete = const_cast<concrete_type*>(static_cast<const concrete_type*>(base));
-								return (*concrete->m_function_ptr)(static_cast<decltype(arguments)>(arguments)...);
+								return (*concrete->m_function_ptr)(static_cast<ArgTs>(arguments)...);
 						}
 				};
 				m_copier = [](auto& base, const auto& other_base) {
