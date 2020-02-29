@@ -1,14 +1,15 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>
 #include <stdexcept>
 #include <string>
-#include <memory>
 #include <type_traits>
 #include <utility>
 
+
 #define CALLABLE_ERROR                                                         \
-  "`tmf::callable` cannot hold a callable this large! Increasing "        \
+  "`tmf::callable` cannot hold a callable this large! Increasing "             \
   "capacity might help; Or try decoupling state from functionality if "        \
   "possible."
 
@@ -27,17 +28,16 @@ struct callable_base
   using copier_function_pointer =
     void (*)(callable_base<ReturnT, ArgTs...>&,
              const callable_base<ReturnT, ArgTs...>&);
-  using mover_function_pointer =
-    void (*)(callable_base<ReturnT, ArgTs...>&,
-             callable_base<ReturnT, ArgTs...>&&);
+  using mover_function_pointer = void (*)(callable_base<ReturnT, ArgTs...>&,
+                                          callable_base<ReturnT, ArgTs...>&&);
 };
 
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function : callable_base<ReturnT, ArgTs...>
 {
-  template<typename FwdClassT,
-           typename =
-             std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
+  template<
+    typename FwdClassT,
+    typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
                                 !std::is_const_v<ClassT>>>
   member_function(FwdClassT&& object, MemPtrT member)
     : m_object(std::forward<FwdClassT>(object))
@@ -51,8 +51,8 @@ struct member_function : callable_base<ReturnT, ArgTs...>
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 {
-  template<typename =
-             std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
+  template<
+    typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
                                 !std::is_const_v<ClassT>>>
   member_function_smart_pointer(const std::shared_ptr<ClassT>& object,
                                 MemPtrT member)
@@ -67,8 +67,8 @@ struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_raw_pointer : callable_base<ReturnT, ArgTs...>
 {
-  template<typename =
-             std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
+  template<
+    typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
                                 !std::is_const_v<ClassT>>>
   member_function_raw_pointer(ClassT* object, MemPtrT member)
     : m_object(object)
@@ -173,16 +173,15 @@ struct callable<ReturnT(ArgTs...), Capacity>
   this_type& operator=(this_type&& rhs) noexcept;
 
   // call the stored function
-  template<typename... FwdArgTs>
-  ReturnT operator()(FwdArgTs&&... arguments);
+  ReturnT operator()(ArgTs... arguments);
 
   // call the stored function, from const source
-  template<typename... FwdArgTs>
-  ReturnT operator()(FwdArgTs&&... arguments) const;
+  ReturnT operator()(ArgTs... arguments) const;
 
   // check if a valid source is stored
-  // if false, invoking `operator(...)` will only throw if/what the stored function throws
-  // if true, invoking `operator(...)` will immediately throw an `empty_callable` exception
+  // if false, invoking `operator(...)` will only throw if/what the stored
+  // function throws if true, invoking `operator(...)` will immediately throw an
+  // `empty_callable` exception
   bool empty() const;
 
   ~callable();
