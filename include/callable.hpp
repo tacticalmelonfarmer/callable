@@ -7,38 +7,35 @@
 #include <type_traits>
 #include <utility>
 
-
-#define CALLABLE_ERROR                                                         \
-  "`tmf::callable` cannot hold a callable this large! Increasing "             \
-  "capacity might help; Or try decoupling state from functionality if "        \
+#define CALLABLE_ERROR                                                                                                 \
+  "`tmf::callable` cannot hold a callable this large! Increasing "                                                     \
+  "capacity might help; Or try decoupling state from functionality if "                                                \
   "possible."
 
 namespace tmf { // represent
 using size_t = decltype(sizeof(0));
+
+struct callable_exception : std::runtime_error
+{
+  using std::runtime_error::runtime_error;
+};
 
 inline namespace detail {
 
 template<typename ReturnT, typename... ArgTs>
 struct callable_base
 {
-  using deleter_function_pointer =
-    void (*)(const callable_base<ReturnT, ArgTs...>*);
-  using caller_function_pointer =
-    ReturnT (*)(bool, const callable_base<ReturnT, ArgTs...>*, ArgTs...);
-  using copier_function_pointer =
-    void (*)(callable_base<ReturnT, ArgTs...>&,
-             const callable_base<ReturnT, ArgTs...>&);
-  using mover_function_pointer = void (*)(callable_base<ReturnT, ArgTs...>&,
-                                          callable_base<ReturnT, ArgTs...>&&);
+  using deleter_function_pointer = void (*)(const callable_base<ReturnT, ArgTs...>*);
+  using caller_function_pointer = ReturnT (*)(bool, const callable_base<ReturnT, ArgTs...>*, ArgTs...);
+  using copier_function_pointer = void (*)(callable_base<ReturnT, ArgTs...>&, const callable_base<ReturnT, ArgTs...>&);
+  using mover_function_pointer = void (*)(callable_base<ReturnT, ArgTs...>&, callable_base<ReturnT, ArgTs...>&&);
 };
 
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function : callable_base<ReturnT, ArgTs...>
 {
-  template<
-    typename FwdClassT,
-    typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
-                                !std::is_const_v<ClassT>>>
+  template<typename FwdClassT,
+           typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> && !std::is_const_v<ClassT>>>
   member_function(FwdClassT&& object, MemPtrT member)
     : m_object(std::forward<FwdClassT>(object))
     , m_member(member)
@@ -51,11 +48,8 @@ struct member_function : callable_base<ReturnT, ArgTs...>
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 {
-  template<
-    typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
-                                !std::is_const_v<ClassT>>>
-  member_function_smart_pointer(const std::shared_ptr<ClassT>& object,
-                                MemPtrT member)
+  template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> && !std::is_const_v<ClassT>>>
+  member_function_smart_pointer(const std::shared_ptr<ClassT>& object, MemPtrT member)
     : m_object(object)
     , m_member(member)
   {}
@@ -67,9 +61,7 @@ struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_raw_pointer : callable_base<ReturnT, ArgTs...>
 {
-  template<
-    typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> &&
-                                !std::is_const_v<ClassT>>>
+  template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> && !std::is_const_v<ClassT>>>
   member_function_raw_pointer(ClassT* object, MemPtrT member)
     : m_object(object)
     , m_member(member)
@@ -94,13 +86,6 @@ struct free_function : callable_base<ReturnT, ArgTs...>
 
 static constexpr auto default_callable_capacity = sizeof(std::uintptr_t) * 4;
 
-struct empty_callable : std::runtime_error
-{
-  empty_callable(const std::string& what)
-    : std::runtime_error("[empty_callable]: " + what)
-  {}
-};
-
 template<typename, size_t = default_callable_capacity>
 struct callable;
 
@@ -113,61 +98,58 @@ struct callable<ReturnT(ArgTs...), Capacity>
   // copies/moves an object and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
-  callable(ClassT&& object, MemPtrT member);
+  callable(ClassT&& object, MemPtrT member) noexcept;
 
   // copies/moves an object and points to it's call operator
   // `ClassT::operator()`
   template<typename ClassT>
-  callable(ClassT&& object);
+  callable(ClassT&& object) noexcept;
 
   // points to an object and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
-  callable(ClassT* object, MemPtrT member);
+  callable(ClassT* object, MemPtrT member) noexcept;
 
   // points to an object and points to it's call operator `ClassT::operator()`
   template<typename ClassT>
-  callable(ClassT* object);
+  callable(ClassT* object) noexcept;
 
   // points to an object and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
-  callable(const std::shared_ptr<ClassT>& object, MemPtrT member);
+  callable(std::shared_ptr<ClassT>& object, MemPtrT member) noexcept;
 
   // points to an object and points to it's call operator `ClassT::operator()`
   template<typename ClassT>
-  callable(const std::shared_ptr<ClassT>& object);
+  callable(std::shared_ptr<ClassT>& object) noexcept;
 
   // points to an object and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
-  callable(std::shared_ptr<ClassT>&& object, MemPtrT member);
+  callable(std::shared_ptr<ClassT>&& object, MemPtrT member) noexcept;
 
   // points to an object and points to it's call operator `ClassT::operator()`
   template<typename ClassT>
-  callable(std::shared_ptr<ClassT>&& object);
+  callable(std::shared_ptr<ClassT>&& object) noexcept;
 
   // points to a callable using a pointer to function
-  callable(function_type* function_pointer);
+  callable(function_type* function_pointer) noexcept;
 
   // default initialize to be an empty function<...>
   // the storage is considered to have an invalid source
-  callable();
+  callable() noexcept;
 
   // copy construct
-  callable(this_type& other);
-
-  // copy construct
-  callable(const this_type& other);
+  callable(const this_type& other) noexcept;
 
   // move construct
   callable(this_type&& other) noexcept;
 
   // copy assignment
-  this_type& operator=(this_type& rhs);
+  this_type& operator=(this_type& rhs) noexcept;
 
   // copy assignment
-  this_type& operator=(const this_type& rhs);
+  this_type& operator=(const this_type& rhs) noexcept;
 
   // move assignment
   this_type& operator=(this_type&& rhs) noexcept;
@@ -179,9 +161,6 @@ struct callable<ReturnT(ArgTs...), Capacity>
   ReturnT operator()(ArgTs... arguments) const;
 
   // check if a valid source is stored
-  // if false, invoking `operator(...)` will only throw if/what the stored
-  // function throws if true, invoking `operator(...)` will immediately throw an
-  // `empty_callable` exception
   bool empty() const;
 
   ~callable();
@@ -205,7 +184,6 @@ private:
 
   std::aligned_storage_t<Capacity, alignof(std::max_align_t)> m_storage;
 };
-
 }
 
 #include "callable.inl"

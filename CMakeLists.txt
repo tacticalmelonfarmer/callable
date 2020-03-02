@@ -6,17 +6,15 @@ add_library(libcallable INTERFACE)
 target_compile_features(libcallable INTERFACE cxx_std_17)
 target_include_directories(libcallable INTERFACE include)
 
-add_executable(assign tests/assign.cpp)
-target_link_libraries(assign libcallable)
+add_executable(catch2_unit_tests
+    tests/framework/main.cpp
+    tests/assign.cpp
+    tests/call.cpp
+    tests/construct.cpp
+    tests/destroy.cpp
+)
+target_link_libraries(catch2_unit_tests libcallable)
 
-add_executable(call tests/call.cpp)
-target_link_libraries(call libcallable)
+enable_testing()
 
-add_executable(parameter tests/parameter.cpp)
-target_link_libraries(parameter libcallable)
-
-add_executable(construct tests/construct.cpp)
-target_link_libraries(construct libcallable)
-
-add_executable(destroy tests/destroy.cpp)
-target_link_libraries(destroy libcallable)
+add_test(NAME catch2 COMMAND catch2_unit_tests)

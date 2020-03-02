@@ -1,5 +1,6 @@
 cpp.hint
 .vs/
+.vscode/
 CMakeSettings.json
 out/
 build/
