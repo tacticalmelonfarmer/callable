@@ -94,12 +94,12 @@ struct callable<ReturnT(ArgTs...), Capacity>
   using function_type = ReturnT(ArgTs...);
   using this_type = callable<ReturnT(ArgTs...), Capacity>;
 
-  // copies/moves/references a constant entity and holds a pointer to non-static member function of
+  // references/moves/copies a constant entity and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
   callable(ClassT&& object, MemPtrT member) noexcept;
 
-  // copies/moves/references an entity and points to it's call operator
+  // references/moves/copies an entity and points to it's call operator
   // `ClassT::operator()`
   template<typename ClassT>
   callable(ClassT&& object) noexcept;

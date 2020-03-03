@@ -7,7 +7,6 @@ When using a binding mechanism (~~std::bind~~, lambda, etc...), the entity must 
 You can initialize a `callable` with:
  - function pointer: address of free function or static member function
  - functor: class which defines `operator()`
-    - pass by constant reference: 
  - functor pointer
  - functor `std::shared_ptr`
  - lambda
@@ -18,17 +17,18 @@ You can initialize a `callable` with:
  - object shared_ptr + pointer-to-member-function
 
 ## Setup
-### CMake
-To use this library, simply clone the repository into your project, and in your *CMakeLists.txt* do:
+### CMake it easy
+To use this library, simply clone the repo somewhere into your project, and in your *CMakeLists.txt* do:
 ```cmake
-add_subdirectory("path/to/callable/folder")
+add_subdirectory("path/to/callable/include")
 ```
+
 and for any targets that need to use the library, do:
 ```cmake
 target_link_libraries(my_target libcallable)
 ```
 
-### Not using CMake? No problem.
+### No CMake? No problem.
 here are ways you can do it without cmake:
 + add **include/** directory to your build system for targets that need to use this library
 + just copy the headers and stick 'em where you need 'em.
@@ -77,6 +77,3 @@ int main()
  callable<void(), 4> basic2{ free_fn };
 }
 ```
-
-## You can still use heap-backed entities
-All `callable`s store their source on the stack, and allow you to specify a fixed size as the second template argument. However, you can provide a **raw pointer** or a `shared_ptr` instead, to avoid copying or moving objects.

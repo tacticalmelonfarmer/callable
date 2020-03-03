@@ -1,6 +1,7 @@
 #pragma once
 
 #include <callable.hpp>
+#include <type_traits>
 
 using testing_type = tmf::callable<int(int, int&, int const&, int&&, int*)>;
 
@@ -48,6 +49,8 @@ public:
   non_trivial_destructing(int* init_check)
     : check{ init_check }
   {}
+
   int operator()(int, int&, int const&, int&&, int*) { return 0; }
+
   ~non_trivial_destructing() { *check += 1; }
 };
