@@ -34,8 +34,7 @@ struct callable_base
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function : callable_base<ReturnT, ArgTs...>
 {
-  template<typename FwdClassT,
-           typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> && !std::is_const_v<ClassT>>>
+  template<typename FwdClassT, typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT>>>
   member_function(FwdClassT&& object, MemPtrT member)
     : m_object(std::forward<FwdClassT>(object))
     , m_member(member)
@@ -48,7 +47,7 @@ struct member_function : callable_base<ReturnT, ArgTs...>
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 {
-  template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> && !std::is_const_v<ClassT>>>
+  template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT>>>
   member_function_smart_pointer(const std::shared_ptr<ClassT>& object, MemPtrT member)
     : m_object(object)
     , m_member(member)
@@ -61,7 +60,7 @@ struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
 struct member_function_raw_pointer : callable_base<ReturnT, ArgTs...>
 {
-  template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT> && !std::is_const_v<ClassT>>>
+  template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT>>>
   member_function_raw_pointer(ClassT* object, MemPtrT member)
     : m_object(object)
     , m_member(member)
@@ -95,12 +94,12 @@ struct callable<ReturnT(ArgTs...), Capacity>
   using function_type = ReturnT(ArgTs...);
   using this_type = callable<ReturnT(ArgTs...), Capacity>;
 
-  // copies/moves an object and holds a pointer to non-static member function of
+  // copies/moves/references a constant entity and holds a pointer to non-static member function of
   // the held object
   template<typename ClassT, typename MemPtrT>
   callable(ClassT&& object, MemPtrT member) noexcept;
 
-  // copies/moves an object and points to it's call operator
+  // copies/moves/references an entity and points to it's call operator
   // `ClassT::operator()`
   template<typename ClassT>
   callable(ClassT&& object) noexcept;

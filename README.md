@@ -1,16 +1,18 @@
 # Callable
 This is a tiny header-only library, everything is in namespace `tmf`.
 
-The primary type is the templated class `callable`; It is a container for any "functional" entity.
-It behaves like `std::function`, the difference being it is purely stack-allocated with an adjustable static capacity.
-When using a binding mechanism (~~std::bind~~, lambda, etc...), the entity must store the bound arguments somehow, hence the capacity (bytes, octets).
+The template class `callable` behaves like `std::function`, the difference being it is on the stack with an user-defined static capacity.
+When using a binding mechanism (~~std::bind~~, lambda, etc...), the entity must store the bound arguments somehow, hence the capacity, specified in bytes.
 
-Things that can initialize a `callable`:
+You can initialize a `callable` with:
  - function pointer: address of free function or static member function
  - functor: class which defines `operator()`
+    - pass by constant reference: 
  - functor pointer
- - lambda: implicit language-generated functor
+ - functor `std::shared_ptr`
+ - lambda
  - lambda pointer
+ - lambda `std::shared_ptr`
  - object reference (rvalue or lvalue) + pointer-to-member-function
  - object pointer + pointer-to-member-function
  - object shared_ptr + pointer-to-member-function

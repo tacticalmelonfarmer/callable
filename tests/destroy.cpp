@@ -3,7 +3,6 @@
 
 TEST_CASE("when a callable is destroyed it will call through to the sources destructor (if available)", "[destroy]")
 {
-
   SECTION("constant reference")
   {
     int check_value = 0;
@@ -11,7 +10,7 @@ TEST_CASE("when a callable is destroyed it will call through to the sources dest
     testing_type subject{ source };
     subject.~testing_type();
     // don't destroy a referenced entity
-    REQUIRE_FALSE(check_value == 1);
+    REQUIRE(check_value == 0);
   }
   SECTION("mutable reference")
   {
@@ -20,7 +19,7 @@ TEST_CASE("when a callable is destroyed it will call through to the sources dest
     testing_type subject{ source };
     subject.~testing_type();
     // don't destroy a referenced entity
-    REQUIRE_FALSE(check_value == 1);
+    REQUIRE(check_value == 0);
   }
   SECTION("temporary reference (two destructor calls)")
   {
@@ -37,7 +36,7 @@ TEST_CASE("when a callable is destroyed it will call through to the sources dest
     testing_type subject{ &source };
     subject.~testing_type();
     // don't destroy a pointed-to entity
-    REQUIRE_FALSE(check_value == 1);
+    REQUIRE(check_value == 0);
   }
   SECTION("shared pointer reference")
   {
@@ -46,14 +45,13 @@ TEST_CASE("when a callable is destroyed it will call through to the sources dest
     testing_type subject{ source };
     subject.~testing_type();
     // don't destroy a pointed-to entity
-    REQUIRE_FALSE(check_value == 1);
+    REQUIRE(check_value == 0);
   }
   SECTION("shared pointer temporary reference")
   {
     int check_value = 0;
     testing_type subject{ std::make_shared<non_trivial_destructing>(&check_value) };
     subject.~testing_type();
-    // don't destroy a pointed-to entity
     REQUIRE(check_value == 1);
   }
 }

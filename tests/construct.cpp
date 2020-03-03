@@ -13,8 +13,12 @@ TEST_CASE("callables can be constructed from various sources", "[construct]")
   }
   SECTION("from a functor (class with `operator()`), callables can")
   {
-    SECTION("copy from") { REQUIRE(std::is_nothrow_constructible_v<testing_type, functor const&>); }
-    SECTION("reference") { REQUIRE(std::is_nothrow_constructible_v<testing_type, functor&>); }
+    SECTION("copy from") { REQUIRE(std::is_nothrow_constructible_v<testing_type, functor>); }
+    SECTION("reference")
+    {
+      REQUIRE(std::is_nothrow_constructible_v<testing_type, functor const&>);
+      REQUIRE(std::is_nothrow_constructible_v<testing_type, functor&>);
+    }
     SECTION("move from") { REQUIRE(std::is_nothrow_constructible_v<testing_type, functor&&>); }
     SECTION("point to (raw pointer)") { REQUIRE(std::is_nothrow_constructible_v<testing_type, functor*>); }
     SECTION("point to (shared pointer)")
@@ -24,11 +28,12 @@ TEST_CASE("callables can be constructed from various sources", "[construct]")
   }
   SECTION("from an object (class with public methods), callables can")
   {
-    SECTION("copy from")
+    SECTION("copy from") { REQUIRE(std::is_nothrow_constructible_v<testing_type, object, decltype(&object::method)>); }
+    SECTION("reference")
     {
       REQUIRE(std::is_nothrow_constructible_v<testing_type, object const&, decltype(&object::method)>);
+      REQUIRE(std::is_nothrow_constructible_v<testing_type, object&, decltype(&object::method)>);
     }
-    SECTION("reference") { REQUIRE(std::is_nothrow_constructible_v<testing_type, object&, decltype(&object::method)>); }
     SECTION("move from")
     {
       REQUIRE(std::is_nothrow_constructible_v<testing_type, object&&, decltype(&object::method)>);
