@@ -1,26 +1,37 @@
 # Callable
 This is a tiny header-only library, everything is in namespace `tmf`.
 
-The template class `callable` behaves like `std::function`, the difference being it is on the stack with an user-defined static capacity.
+The template class `callable` has a similar interface to `std::function`, the difference being it is on the stack with a user-defined static capacity.
 When using a binding mechanism (~~std::bind~~, lambda, etc...), the entity must store the bound arguments somehow, hence the capacity, specified in bytes.
 
 You can initialize a `callable` with:
- - function pointer: address of free function or static member function
+ - function pointer
+    - free function 
+    - static member function
  - functor: class which defines `operator()`
- - functor pointer
- - functor `std::shared_ptr`
+    - functor constant reference
+    - functor mutable reference
+    - functor pointer
+    - functor value
+    - functor `std::shared_ptr`
  - lambda
- - lambda pointer
- - lambda `std::shared_ptr`
- - object reference (rvalue or lvalue) + pointer-to-member-function
- - object pointer + pointer-to-member-function
- - object shared_ptr + pointer-to-member-function
+    - lambda constant reference
+    - lambda mutable reference
+    - lambda pointer
+    - lambda value
+    - lambda `std::shared_ptr`
+- { object, member } pair
+    - { object constant reference, member function pointer } pair
+    - { object mutable reference, member function pointer } pair
+    - { object pointer, member function pointer } pair
+    - { object value, member function pointer } pair
+    - { object `std::shared_ptr`, member function pointer } pair
 
 ## Setup
 ### CMake it easy
 To use this library, simply clone the repo somewhere into your project, and in your *CMakeLists.txt* do:
 ```cmake
-add_subdirectory("path/to/callable/include")
+add_subdirectory("path/to/callable")
 ```
 
 and for any targets that need to use the library, do:
@@ -31,49 +42,6 @@ target_link_libraries(my_target libcallable)
 ### No CMake? No problem.
 here are ways you can do it without cmake:
 + add **include/** directory to your build system for targets that need to use this library
+
+    or
 + just copy the headers and stick 'em where you need 'em.
-
-## Usage
-*defer to the tests for in depth usage*
-
-for less typing you can:
-```c++
-#include <callable.hpp>
-using tmf::callable;
-```
-
-basic instantiation of a `callable` providing function signature and defaulted capacity:
-```c++
-void free_fn()
-{}
-
-int main()
-{
- callable<void()> basic1{ &free_fn };
- callable<void()> basic2{ free_fn };
-}
-```
-
-basic instantiation of a `callable` deducing function signature and defaulted capacity:
-```c++
-void free_fn()
-{}
-
-int main()
-{
- callable basic1{ &free_fn };
- callable basic2{ free_fn };
-}
-```
-
-full instantiation of a `callable` providing function signature and providing capacity:
-```c++
-void free_fn()
-{}
-
-int main()
-{
- callable<void(), 4> basic1{ &free_fn };
- callable<void(), 4> basic2{ free_fn };
-}
-```

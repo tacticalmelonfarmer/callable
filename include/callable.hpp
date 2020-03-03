@@ -32,7 +32,7 @@ struct callable_base
 };
 
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
-struct member_function : callable_base<ReturnT, ArgTs...>
+struct member_function final : callable_base<ReturnT, ArgTs...>
 {
   template<typename FwdClassT, typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT>>>
   member_function(FwdClassT&& object, MemPtrT member)
@@ -45,7 +45,7 @@ struct member_function : callable_base<ReturnT, ArgTs...>
 };
 
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
-struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
+struct member_function_smart_pointer final : callable_base<ReturnT, ArgTs...>
 {
   template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT>>>
   member_function_smart_pointer(const std::shared_ptr<ClassT>& object, MemPtrT member)
@@ -58,7 +58,7 @@ struct member_function_smart_pointer : callable_base<ReturnT, ArgTs...>
 };
 
 template<typename ClassT, typename MemPtrT, typename ReturnT, typename... ArgTs>
-struct member_function_raw_pointer : callable_base<ReturnT, ArgTs...>
+struct member_function_raw_pointer final : callable_base<ReturnT, ArgTs...>
 {
   template<typename = std::enable_if_t<std::is_member_function_pointer_v<MemPtrT>>>
   member_function_raw_pointer(ClassT* object, MemPtrT member)
@@ -71,7 +71,7 @@ struct member_function_raw_pointer : callable_base<ReturnT, ArgTs...>
 };
 
 template<typename ReturnT, typename... ArgTs>
-struct free_function : callable_base<ReturnT, ArgTs...>
+struct free_function final : callable_base<ReturnT, ArgTs...>
 {
   using function_pointer_type = ReturnT (*)(ArgTs...);
   free_function(function_pointer_type pointer)
