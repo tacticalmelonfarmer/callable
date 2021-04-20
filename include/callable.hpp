@@ -12,7 +12,7 @@
   "capacity might help; Or try decoupling state from functionality if "                                                \
   "possible."
 
-namespace tmf { // represent
+namespace tmf {
 using size_t = decltype(sizeof(0));
 
 struct callable_exception : std::runtime_error

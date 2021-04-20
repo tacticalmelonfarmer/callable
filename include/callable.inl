@@ -130,7 +130,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object, MemPtrT member)
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -164,7 +164,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT&& object) noexcept
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -197,7 +197,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object, MemPtrT member) 
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -231,7 +231,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(ClassT* object) noexcept
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -263,7 +263,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(std::shared_ptr<ClassT>& object,
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -296,7 +296,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(std::shared_ptr<ClassT>& object)
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -328,7 +328,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(std::shared_ptr<ClassT>&& object
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -361,7 +361,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(std::shared_ptr<ClassT>&& object
     auto concrete = static_cast<const concrete_type*>(base);
     concrete->~concrete_type();
   };
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       auto source_object = concrete->m_object;
@@ -388,7 +388,7 @@ callable<ReturnT(ArgTs...), Capacity>::callable(function_type* function_pointer)
   static_assert(sizeof(concrete_type) <= Capacity, CALLABLE_ERROR);
   new (access()) concrete_type(function_pointer);
   m_deleter = nullptr;
-  m_caller = [](bool is_const, auto base, ArgTs... arguments) {
+  m_caller = [](bool is_const, const callable_base<ReturnT, ArgTs...>* base, ArgTs... arguments) {
     if (is_const) {
       auto concrete = static_cast<const concrete_type*>(base);
       return (*concrete->m_function_ptr)(static_cast<ArgTs>(arguments)...);
