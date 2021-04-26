@@ -36,7 +36,7 @@ add_subdirectory("path/to/callable")
 
 and for any targets that need to use the library, do:
 ```cmake
-target_link_libraries(my_target libcallable)
+target_link_libraries(my_target callable)
 ```
 
 ### No CMake? No problem.
